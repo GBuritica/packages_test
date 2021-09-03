@@ -16,7 +16,7 @@ library(fExtremes)
 library(boot)
 library(ggplot2)
 library(stable)
-sapply(1:3, function(k) stable.set.tolerance(k,1e-500))
+sapply(1:3, function(k) stable.set.tolerance(k,1e-200))
 #######################################################################
 #######################################################################
 #######################################################################
@@ -65,8 +65,8 @@ n    <- 8000
 bu   <- 60
 a    <- 1
 box <- data.frame("a" = NULL, "b" =NULL, "g" = NULL, "d" = NULL, "Q50" = NULL)
-while(N < 500){
-  sample <- abs(rstable(n,alpha=1))# abs( arima.sim(n = n, list(ar=0.8, ma=0), rand.gen=function(n) rt(n,df=1)) )#ARMAX1((1-thet), n) #squaredARCH(lambdaV[1,2],n); a <- alphaestimator(sample) #
+while(N < 250){
+  sample <- abs( arima.sim(n = n, list(ar=0.8, ma=0), rand.gen=function(n) rt(n,df=1)) )#ARMAX1((1-thet), n)abs(rstable(n,alpha=1))#  #squaredARCH(lambdaV[1,2],n); a <- alphaestimator(sample) #
   suma   <- sapply(1:floor(n/bu), function(k) sum( sample[((k-1)*bu +1):(k*bu)]^a ))
   fit    <- stable.fit.mle.restricted(suma, c(0,1,0,0), c(0,1,0,0))
   quan   <- sapply(c(50), function(k) qstable( (1-bu/(k*365.25)) , 
@@ -106,14 +106,14 @@ ks.test( (log(box$Q50) - mean(log(box$Q50)))/sd( log(box$Q50) ), 'pnorm')
 #######################################################################
 ## Asymptotic normality for the stable blocks estimator 
 ##   with automatic block length selection.
-## ok ARMAX
+##   Fails
 N    <- 0 
 thet <- 0.5
-n    <- 10000
+n    <- 8000
 a    <- 1
 box <- data.frame("a" = NULL, "b" =NULL, "g" = NULL, "d" = NULL, "bu" = NULL)
-while(N < 100){
-  sample <- abs( arima.sim(n = n, list(ar=0.8, ma=0), rand.gen=function(n) rt(n,df=1)) )#ARMAX1((1-thet), n) #squaredARCH(lambdaV[1,2],n); a <- alphaestimator(sample) #
+while(N < 1000){
+  sample <- abs( arima.sim(n = n, list(ar=0.5, ma=0), rand.gen=function(n) rt(n,df=1)) )#ARMAX1((1-thet), n) #squaredARCH(lambdaV[1,2],n); a <- alphaestimator(sample) #
   bu     <- 32
   flag   <- 0
   paramet <- NULL
@@ -128,7 +128,7 @@ while(N < 100){
     }  
     bu <- bu +1
   } 
-  if(bu < 128){
+  if(bu < 256){
     min_stat <- which.min(paramet[,1])
     bu       <- paramet[min_stat,2]
   }
